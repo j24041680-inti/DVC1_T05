@@ -1,0 +1,131 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>National Road Safety Enforcement Dashboard</title>
+    <style>
+        /* Modern UI Layout Styling */
+        body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; background: #F8F9FA; color: #212529; margin: 0; padding: 0; }
+        .main-header { background: #1D3557; color: #FFF; padding: 15px 20px; display: flex; justify-content: space-between; align-items: center; }
+        .logo-area { font-weight: bold; font-size: 1.2rem; }
+        .top-navbar .nav-tab { background: transparent; border: none; color: #A8DADC; padding: 10px 15px; font-size: 1rem; cursor: pointer; border-bottom: 3px solid transparent; transition: all 0.3s; }
+        .top-navbar .nav-tab.active { color: #FFF; border-bottom-color: #E63946; font-weight: bold; }
+        
+        .filter-ribbon { background: #FFF; border-bottom: 1px solid #DEE2E6; padding: 12px 20px; display: flex; gap: 20px; align-items: center; }
+        .control-group { display: flex; align-items: center; gap: 8px; font-size: 0.9rem; font-weight: 500; }
+        .control-group select { padding: 6px 12px; border: 1px solid #CED4DA; border-radius: 4px; font-size: 0.9rem; }
+        .control-btn { background: #457B9D; color: white; border: none; padding: 7px 15px; border-radius: 4px; cursor: pointer; font-size: 0.9rem; font-weight: 500; }
+        .control-btn:hover { background: #1D3557; }
+        
+        .dashboard-grid { display: flex; padding: 20px; gap: 20px; min-height: calc(100vh - 120px); }
+        .left-panel { width: 25%; display: flex; flex-direction: column; gap: 20px; }
+        .chart-matrix { width: 75%; display: flex; flex-direction: column; gap: 20px; }
+        
+        .kpi-card { background: #FFF; border: 1px solid #DEE2E6; border-radius: 6px; padding: 20px; box-shadow: 0 2px 4px rgba(0,0,0,0.02); }
+        .kpi-card h3 { margin: 0 0 10px 0; font-size: 0.9rem; text-transform: uppercase; color: #6C757D; }
+        .kpi-value { font-size: 2.2rem; font-weight: bold; color: #1D3557; }
+        
+        .annotation-box { background: #FFF3CD; border-left: 4px solid #FFC107; padding: 15px; border-radius: 4px; font-size: 0.85rem; color: #664D03; }
+        .annotation-box h4 { margin: 0 0 5px 0; }
+        
+        .chart-container { background: #FFF; border: 1px solid #DEE2E6; border-radius: 6px; padding: 20px; box-shadow: 0 2px 4px rgba(0,0,0,0.02); }
+        .chart-container h2 { margin: 0 0 15px 0; font-size: 1.1rem; color: #1D3557; border-bottom: 1px solid #F1F3F5; padding-bottom: 10px; }
+        .split-charts-row { display: flex; gap: 20px; }
+        .half-chart { width: 50%; }
+        
+        /* D3 CSS Graph Classes */
+        .axis path, .axis line { stroke: #CED4DA; }
+        .axis text { fill: #495057; font-size: 11px; }
+        .trend-line { fill: none; stroke-width: 3; stroke-linecap: round; }
+        .bar:hover { fill: #E63946 !important; }
+        .age-bar { transition: fill 0.2s; }
+        .age-bar:hover { fill: #457B9D; }
+    </style>
+    <script src="https://d3js.org/d3.v7.min.js"></script>
+</head>
+<body>
+
+    <header class="main-header">
+        <div class="logo-area">National Road Safety Hub</div>
+        <nav class="top-navbar">
+            <button class="nav-tab active" data-category="mobile_phone">Mobile Phone Use</button>
+            <button class="nav-tab" data-category="speeding">Speeding</button>
+            <button class="nav-tab" data-category="seatbelt">Seatbelts</button>
+            <button class="nav-tab" data-category="drug_test">Drug Tests</button>
+        </nav>
+    </header>
+
+    <div class="filter-ribbon">
+        <div class="control-group">
+            <label for="filter-year">Select Year:</label>
+            <select id="filter-year">
+                <option value="2024" selected>2024</option>
+                <option value="2023">2023</option>
+                <option value="2022">2022</option>
+                <option value="All">All Years</option>
+            </select>
+        </div>
+        <div class="control-group">
+            <label for="filter-method">Detection Method:</label>
+            <select id="filter-method">
+                <option value="All" selected>All Methods</option>
+                <option value="Camera">Camera Detected</option>
+                <option value="Police">Police Issued</option>
+            </select>
+        </div>
+        <button id="btn-reset" class="control-btn">Reset View</button>
+    </div>
+
+    <div class="dashboard-grid">
+        <aside class="left-panel">
+            <div class="control-group" style="flex-direction: column; align-items: flex-start; width: 100%;">
+                <label for="filter-state" style="margin-bottom: 5px;">Select State/Territory:</label>
+                <select id="filter-state" style="width: 100%;">
+                    <option value="All" selected>All Options (National)</option>
+                    <option value="NSW">New South Wales (NSW)</option>
+                    <option value="VIC">Victoria (VIC)</option>
+                    <option value="QLD">Queensland (QLD)</option>
+                    <option value="ACT">Australian Capital Territory (ACT)</option>
+                    <option value="SA">South Australia (SA)</option>
+                    <option value="WA">Western Australia (WA)</option>
+                    <option value="TAS">Tasmania (TAS)</option>
+                    <option value="NT">Northern Territory (NT)</option>
+                </select>
+            </div>
+
+            <div class="kpi-card">
+                <h3>Total Volumetric Infringements</h3>
+                <div id="kpi-total-volume" class="kpi-value">0</div>
+            </div>
+
+            <div class="annotation-box">
+                <h4>[i] Data Governance Alert</h4>
+                <p>Victoria (Late 2024): Data volumes artificially low due to recorded Protected Industrial Action (PIA)[cite: 32].</p>
+            </div>
+        </aside>
+
+        <main class="chart-matrix">
+            <section class="chart-container">
+                <h2>Annual Enforcement Trends (Longitudinal Overview)</h2>
+                <div id="timeline-chart"></div>
+            </section>
+
+            <div class="split-charts-row">
+                <section class="chart-container half-chart">
+                    <h2>Fines per 10,000 Driver Licences</h2>
+                    <div id="jurisdiction-chart"></div>
+                </section>
+                <section class="chart-container half-chart">
+                    <h2>Demographic Group Breakdown (Post-2023 Fine-Grain)</h2>
+                    <div id="demographic-chart"></div>
+                </section>
+            </div>
+        </main>
+    </div>
+
+    <script type="module">
+        // JavaScript codes go here or link your separate module files
+    </script>
+</body>
+</html>
