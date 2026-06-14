@@ -88,8 +88,18 @@
                         </select>
                     </div>
                     <div class="kpi-micro-badge">
-                        <span class="kpi-label">Aggregated Valuation:</span>
+                        <span class="kpi-label">Total Fines:</span>
                         <span id="kpi-total-volume" class="kpi-value">0 Fines Issued</span>
+                    </div>
+                </div>
+
+                <div class="dashboard-pager-ribbon" style="display: flex; align-items: center; justify-content: space-between; width: 100%; box-sizing: border-box;">
+                    <div style="display: flex; gap: 12px; flex-grow: 1;">
+                        <button class="pager-btn active" data-page="1">📊 Page 1: Executive Overview Trends</button>
+                        <button class="pager-btn" id="pager-btn-page2" data-page="2">🎯 Page 2: Demographics & Deep-Dive Profiles</button>
+                    </div>
+                    <div id="page2-lock-notice" style="font-size: 0.8rem; font-weight: 500; color: #EF4444; margin-left: 15px; display: none; background: #FEE2E2; padding: 6px 12px; border-radius: 6px; border: 1px solid #FCA5A5;">
+                        🔒 Page 2 locked: Select a year from 2023 or 2024 to unlock! 
                     </div>
                 </div>
 
@@ -97,58 +107,71 @@
                     <h3>🚫 Metric Not Tracked</h3>
                     <p>Unlicensed Driving metrics were not incorporated into the national BITRE matrix until 2023. Please select a year from 2023 onwards.</p>
                 </div>
-
-                <div class="workspace-charts-row">
-                    <section class="chart-container full-width-box">
-                        <h2 id="dynamic-trend-title">Longitudinal Evaluation Series</h2>
-                        <div id="timeline-chart"></div>
-                    </section>
+                
+                <div id="seatbelt-warning-banner" class="alert-banner error-banner" style="display: none;">
+                    <h3>🚫 Metric Not Tracked</h3>
+                    <p>Seatbelt Violation metrics were not incorporated into the national BITRE matrix until 2017. Please select a year from 2017 onwards.</p>
                 </div>
 
-                <div class="workspace-charts-row">
-                    <div id="donut-grid-item" class="half-width-box">
+                <div id="dashboard-subpage-1" class="dashboard-subpage active-subpage">
+                    <div id="row-timeline" class="workspace-charts-row">
                         <section class="chart-container full-width-box">
-                            <h2>Infrastructure Split (Camera vs. Police)</h2>
-                            <div id="detection-donut-chart"></div>
+                            <h2 id="dynamic-trend-title">Longitudinal Evaluation Series</h2>
+                            <div id="timeline-chart"></div>
                         </section>
                     </div>
-                    <div id="jurisdiction-grid-item" class="half-width-box">
-                        <section class="chart-container full-width-box">
-                            <h2>Jurisdiction Cross-Comparison Breakdown</h2>
-                            <div id="jurisdiction-bar-chart"></div>
-                        </section>
+
+                    <div id="row-donut-jurisdiction" class="workspace-charts-row">
+                        <div id="donut-grid-item" class="half-width-box">
+                            <section class="chart-container full-width-box">
+                                <h2>Infrastructure Split (Camera vs. Police)</h2>
+                                <div id="detection-donut-chart"></div>
+                            </section>
+                        </div>
+                        <div id="jurisdiction-grid-item" class="half-width-box">
+                            <section class="chart-container full-width-box">
+                                <h2>Jurisdiction Cross-Comparison Breakdown</h2>
+                                <div id="jurisdiction-bar-chart"></div>
+                            </section>
+                        </div>
                     </div>
                 </div>
 
-                <div id="advanced-metrics-grid">
-                    <div class="workspace-charts-row">
-                        <section class="chart-container half-width-box">
-                            <h2>Top Demographic Offender Profiles</h2>
-                            <div id="demographic-bar-chart"></div>
-                        </section>
-                        
-                        <section class="chart-container half-width-box">
-                            <h2>Legal Severity Matrix (Charges & Arrests Outcomes)</h2>
-                            <div id="severity-table-container" class="table-scroll-frame">
-                                <table class="saas-metric-table">
-                                    <thead>
-                                        <tr>
-                                            <th>Enforcement Outcome Category</th>
-                                            <th>Cases Documented</th>
-                                        </tr>
-                                    </thead>
-                                    <tbody id="severity-table-body">
+                <div id="dashboard-subpage-2" class="dashboard-subpage">
+                    <div id="advanced-metrics-grid">
+                        <div class="workspace-charts-row">
+                            <section class="chart-container half-width-box">
+                                <h2>Top Demographic Offender Profiles</h2>
+                                <div id="demographic-bar-chart"></div>
+                            </section>
+                            
+                            <section class="chart-container half-width-box">
+                                <h2>Legal Severity Matrix (Charges & Arrests Outcomes)</h2>
+                                <div id="severity-table-container" class="table-scroll-frame">
+                                    <table class="saas-metric-table">
+                                        <thead>
+                                            <tr>
+                                                <th>Enforcement Outcome Category</th>
+                                                <th>Cases Documented</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody id="severity-table-body">
                                         </tbody>
-                                </table>
-                            </div>
-                        </section>
-                    </div>
+                                    </table>
+                                    <div style="font-size: 9.5px; font-style: italic; color: #64748B; text-align: center; margin-top: 15px; line-height: 1.4;">
+                                        * Note: Judicial court processing outcomes (physical custody arrests and formal charges)<br>
+                                        were not incorporated by BITRE until 2023. Prior historical iterations only track fine volumes.
+                                    </div>
+                                </div>
+                            </section>
+                        </div>
 
-                    <div class="workspace-charts-row">
-                        <section class="chart-container full-width-box">
-                            <h2>Spatial Remoteness Area Categorization</h2>
-                            <div id="spatial-grouped-chart"></div>
-                        </section>
+                        <div class="workspace-charts-row">
+                            <section class="chart-container full-width-box">
+                                <h2>Spatial Remoteness Area Categorization</h2>
+                                <div id="spatial-grouped-chart"></div>
+                            </section>
+                        </div>
                     </div>
                 </div>
 
