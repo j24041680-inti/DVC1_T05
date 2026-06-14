@@ -8,7 +8,8 @@ let chartInstances = {};
 const appState = {
     currentCategory: "mobile_phone_use",
     selectedJurisdiction: "All",
-    selectedYear: "All"
+    selectedYear: "All",
+    activeDashboardPage: 1 // 🚀 NEW: State tracker for sub-pagination frame positions
 };
 
 // Data pipeline reads cleanly relative to index.html position layout
@@ -39,6 +40,21 @@ function initializeDashboardHub() {
             appState.currentCategory = category;
             dispatchDataUpdate();
         }
+    });
+
+    // 🚀 NEW: Dashboard Page 1 & Page 2 Pager Ribbon Controller Navigation
+    d3.selectAll(".dashboard-pager-ribbon .pager-btn").on("click", function() {
+        d3.selectAll(".dashboard-pager-ribbon .pager-btn").classed("active", false);
+        d3.select(this).classed("active", true);
+
+        appState.activeDashboardPage = parseInt(d3.select(this).attr("data-page"));
+        
+        // Toggle the sub-page block visibility wrappers instantly
+        d3.selectAll(".dashboard-subpage").classed("active-subpage", false);
+        d3.select(`#dashboard-subpage-${appState.activeDashboardPage}`).classed("active-subpage", true);
+        
+        // Force dimensions recalculation and component rendering routines instantly
+        dispatchDataUpdate();
     });
 
     d3.select("#filter-state").on("change", function() {
@@ -81,40 +97,81 @@ function dispatchDataUpdate() {
         d3.select("#dynamic-trend-title").text(`${metricLabels[appState.currentCategory]} - Camera vs. Police Trends`);
     }
 
-    chartInstances.timeline.update(timelineData, appState.selectedYear, appState.currentCategory);
+    // 🚀 STAGGERED SEATBELT & LICENSING DATA ACCURACY CHECKS
+    const isAll = appState.selectedYear === "All";
+    const yearInt = parseInt(appState.selectedYear);
+    const state = appState.selectedJurisdiction;
 
-    // 🚀 FIXED GRID REARRANGEMENT LOGIC: Smoothly resizes columns and scales components with no empty holes!
-    if (appState.selectedJurisdiction !== "All") {
-        d3.select("#jurisdiction-grid-item").style("display", "none");
-        d3.select("#donut-grid-item").attr("class", "full-width-box"); // Expand to take 100% width
-    } else {
-        d3.select("#jurisdiction-grid-item").style("display", "block");
-        d3.select("#donut-grid-item").attr("class", "half-width-box"); // Revert back to 50% split width
-        chartInstances.jurisdictions.update(filteredSlice);
+    const isUnlicensedInvalid = !isAll && appState.currentCategory === "unlicensed_driving" && yearInt < 2023;
+
+    let seatbeltStartYear = 2017; 
+    if (["ACT", "NT", "QLD", "SA", "VIC"].includes(state)) seatbeltStartYear = 2018;
+    if (state === "TAS") seatbeltStartYear = 2020;
+
+    const isSeatbeltInvalid = !isAll && appState.currentCategory === "non_wearing_seatbelts" && yearInt < seatbeltStartYear;
+
+    d3.select("#unlicensed-warning-banner").style("display", isUnlicensedInvalid ? "block" : "none");
+    d3.select("#seatbelt-warning-banner").style("display", isSeatbeltInvalid ? "block" : "none");
+    
+    if (isSeatbeltInvalid) {
+        d3.select("#seatbelt-warning-banner p").text(`Seatbelt Violation metrics for ${state === 'All' ? 'Australia' : state} were not incorporated into the national matrix until ${seatbeltStartYear}. Please select a year from ${seatbeltStartYear} onwards.`);
     }
 
-    // Force internal dimensions recalculation and centering loops instantly
-    chartInstances.donut.recalculateWidthAndRender(filteredSlice);
+    const hideAllCharts = isUnlicensedInvalid || isSeatbeltInvalid;
 
-    const isHistorical = appState.selectedYear !== "All" && parseInt(appState.selectedYear) < 2023;
-    const isUnlicensedHistorical = appState.currentCategory === "unlicensed_driving" && isHistorical;
+    // 🚀 NEW ENGINE: AUTOMATIC PAGE 2 LOCK GATEKEEPER
+    const isHistoricalEra = !isAll && yearInt < 2023; // True if user picked 2008-2022[cite: 6, 7]
 
-    if (isUnlicensedHistorical) {
-        d3.select("#unlicensed-warning-banner").style("display", "block");
-        d3.select("#timeline-chart").style("display", "none");
+    if (hideAllCharts || isHistoricalEra) {
+        // Force the user back to page 1 state if page 2 becomes invalid[cite: 8]
+        if (appState.activeDashboardPage === 2) {
+            appState.activeDashboardPage = 1;
+            d3.selectAll(".dashboard-pager-ribbon .pager-btn").classed("active", false);
+            d3.selectAll(".dashboard-pager-ribbon .pager-btn[data-page='1']").classed("active", true);
+        }
+
+        // Gray out the button and show the red notice bar
+        d3.select("#pager-btn-page2")
+            .style("opacity", "0.4")
+            .style("cursor", "not-allowed")
+            .style("pointer-events", "none");
+        d3.select("#page2-lock-notice").style("display", "block");
     } else {
-        d3.select("#unlicensed-warning-banner").style("display", "none");
-        d3.select("#timeline-chart").style("display", "block");
+        // Unlock the button completely if looking at 2023, 2024, or "All History"[cite: 6, 7]
+        d3.select("#pager-btn-page2")
+            .style("opacity", "1")
+            .style("cursor", "pointer")
+            .style("pointer-events", "auto");
+        d3.select("#page2-lock-notice").style("display", "none");
     }
 
-    if (isHistorical) {
-        d3.select("#advanced-metrics-grid").style("display", "none");
+    // Toggle main visibility containers based on computed rules
+    if (hideAllCharts) {
+        d3.select("#dashboard-subpage-1").style("display", "none");
+        d3.select("#dashboard-subpage-2").style("display", "none");
     } else {
-        d3.select("#advanced-metrics-grid").style("display", "block");
+        d3.select("#dashboard-subpage-1").style("display", appState.activeDashboardPage === 1 ? "flex" : "none");
+        d3.select("#dashboard-subpage-2").style("display", appState.activeDashboardPage === 2 ? "flex" : "none");
         
-        chartInstances.demographics.update(filteredSlice);
-        updateSeverityTable(filteredSlice); 
-        chartInstances.locationChart.update(filteredSlice, appState.selectedJurisdiction); 
+        if (appState.activeDashboardPage === 1) {
+            if (appState.selectedJurisdiction !== "All") {
+                d3.select("#jurisdiction-grid-item").style("display", "none");
+                d3.select("#donut-grid-item").attr("class", "full-width-box"); 
+            } else {
+                d3.select("#jurisdiction-grid-item").style("display", "block");
+                d3.select("#donut-grid-item").attr("class", "half-width-box"); 
+                chartInstances.jurisdictions.update(filteredSlice);
+            }
+            chartInstances.timeline.update(timelineData, appState.selectedYear, appState.currentCategory);
+            chartInstances.donut.recalculateWidthAndRender(filteredSlice, appState.currentCategory, yearInt);
+        }
+
+        if (appState.activeDashboardPage === 2) {
+            d3.select("#advanced-metrics-grid").style("display", "block");
+            chartInstances.demographics.update(filteredSlice);
+            updateSeverityTable(filteredSlice); 
+            chartInstances.locationChart.update(filteredSlice, appState.selectedJurisdiction); 
+        }
     }
 
     const totalVolume = d3.sum(filteredSlice, d => +d.FINES || 0);
@@ -126,7 +183,6 @@ function dispatchDataUpdate() {
       });
 }
 
-// 🚀 FIXED SEVERITY TABLE: Status column completely deleted from data parser logic
 function updateSeverityTable(data) {
     const arrests = d3.sum(data, d => +d.ARRESTS || 0);
     const charges = d3.sum(data, d => +d.CHARGES || 0);
@@ -270,33 +326,31 @@ class DetectionDonutChart {
         this.tooltip = d3.select("#d3-tooltip");
     }
 
-    recalculateWidthAndRender(data) {
+    recalculateWidthAndRender(data, metric, year) {
         const node = d3.select(this.containerId).node();
         this.width = (node && node.getBoundingClientRect().width > 0 ? node.getBoundingClientRect().width : 450);
-        this.height = 240;
-        this.radius = Math.min(this.width, this.height) / 2 - 35;
+        this.height = 285; 
+        this.radius = Math.min(this.width, 240) / 2 - 35;
 
         this.svg = d3.select(this.containerId).html("").append("svg")
             .attr("width", this.width).attr("height", this.height)
-            .append("g").attr("transform", `translate(${this.width / 2},${this.height / 2 - 20})`);
+            .append("g").attr("transform", `translate(${this.width / 2},${this.height / 2 - 40})`);
 
         this.legendG = this.svg.append("g");
-        this.update(data);
+        this.update(data, metric, year);
     }
 
-    update(data) {
+    update(data, metric, year) {
         const rollup = d3.rollups(data, v => d3.sum(v, d => +d.FINES || 0), d => d.DETECTION_METHOD)
             .map(([method, val]) => ({ method, val })).filter(d => d.val > 0);
 
-        this.svg.selectAll(".donut-label").remove();
+        this.svg.selectAll(".donut-label, .donut-footnote").remove();
         this.legendG.html("");
 
         if (rollup.length === 0) { this.svg.selectAll("path").remove(); return; }
 
         const pie = d3.pie().value(d => d.val).sort(null);
         const arc = d3.arc().innerRadius(this.radius * 0.55).outerRadius(this.radius);
-        
-        // 🚀 FIXED: Exact mathematical midpoint between 0.55 and 1.0 is 0.775
         const labelArc = d3.arc().innerRadius(this.radius * 0.775).outerRadius(this.radius * 0.775);
         
         const pieData = pie(rollup);
@@ -307,7 +361,7 @@ class DetectionDonutChart {
         const startX = -totalLegendWidth / 2 + 10;
 
         rollup.forEach((d, i) => {
-            const item = this.legendG.append("g").attr("transform", `translate(${startX + (i * itemWidth)}, ${this.height / 2 - 5})`);
+            const item = this.legendG.append("g").attr("transform", `translate(${startX + (i * itemWidth)}, ${240 / 2 - 5})`);
             item.append("rect").attr("width", 10).attr("height", 10).attr("fill", this.colorScale(d.method)).attr("rx", 2);
             item.append("text").attr("x", 15).attr("y", 9).text(d.method.split(" ")[0] + " Issued").style("font-size", "10px").style("font-weight", "600").attr("fill", "#64748B");
         });
@@ -323,23 +377,66 @@ class DetectionDonutChart {
 
         this.svg.selectAll(".donut-label").data(pieData, d => d.data.method).enter()
             .append("text").attr("class", "donut-label").attr("transform", d => `translate(${labelArc.centroid(d)})`)
-            // 🚀 FIXED: Added dy="0.35em" to pull the baseline down and perfectly center the text vertically!
             .attr("dy", "0.35em")
             .attr("text-anchor", "middle").attr("fill", "#FFFFFF").style("font-size", "10px").style("font-weight", "700")
             .text(d => {
                 const pct = ((d.data.val / total) * 100).toFixed(0);
                 return pct > 5 ? `${pct}%` : "";
             });
+
+        const policeData = rollup.find(d => d.method === "Police issued");
+        const isFullPolice = policeData && (policeData.val / total) >= 0.99;
+        
+        let lines = [];
+        if (isFullPolice) {
+            lines = [
+                "* Note: 100% Police issuance reflects the historical absence",
+                "of recorded automated camera enforcement for this selection."
+            ];
+        } else if (metric === "speed_fines" && year < 2017) {
+            lines = [
+                "* Note: National automated camera enforcement data for Speeding",
+                "was not systematically aggregated until the 2017 collection cycle."
+            ];
+        } else if (metric === "mobile_phone_use" && year < 2020) {
+            lines = [
+                "* Note: Automated phone camera detection technology was not",
+                "nationally recorded in the underlying matrix until 2020."
+            ];
+        } else if (metric === "unlicensed_driving" && year === 2024) {
+            lines = [
+                "* Note: 2024 method logging parameters are currently undergoing",
+                "administrative re-categorization to separate missing entries."
+            ];
+        }
+
+        if (lines.length > 0) {
+            const footnoteText = this.svg.append("text")
+                .attr("class", "donut-footnote")
+                .attr("x", 0)
+                .attr("y", this.radius + 68) 
+                .attr("text-anchor", "middle")
+                .attr("fill", "#64748B")
+                .style("font-size", "9.5px")
+                .style("font-style", "italic");
+
+            lines.forEach((lineText, index) => {
+                footnoteText.append("tspan")
+                    .attr("x", 0)
+                    .attr("dy", index === 0 ? "0" : "14px") 
+                    .text(lineText);
+            });
+        }
     }
 }
 
 class JurisdictionBarChart {
     constructor(containerId) {
         this.containerId = containerId;
-        this.margin = { top: 15, right: 30, bottom: 45, left: 55 };
+        this.margin = { top: 15, right: 30, bottom: 65, left: 55 };
         const node = d3.select(this.containerId).node();
         this.width = (node && node.getBoundingClientRect().width > 0 ? node.getBoundingClientRect().width : 450) - this.margin.left - this.margin.right;
-        this.height = 240 - this.margin.top - this.margin.bottom;
+        this.height = 285 - this.margin.top - this.margin.bottom;
 
         this.svg = d3.select(this.containerId).html("").append("svg")
             .attr("width", this.width + this.margin.left + this.margin.right)
@@ -352,7 +449,8 @@ class JurisdictionBarChart {
         this.yAxisG = this.svg.append("g").attr("class", "axis");
         this.tooltip = d3.select("#d3-tooltip");
 
-        this.svg.append("text").attr("x", this.width / 2).attr("y", this.height + 35).attr("text-anchor", "middle").attr("fill", "#64748B").style("font-size", "11px").style("font-weight", "700").text("State Code Jurisdiction");
+        this.svg.append("text").attr("x", this.width / 2).attr("y", this.height + 45).attr("text-anchor", "middle").attr("fill", "#64748B").style("font-size", "11px").style("font-weight", "700").text("State Code Jurisdiction");
+        this.svg.append("text").attr("transform", "rotate(-90)").attr("x", -this.height / 2).attr("y", -42).attr("text-anchor", "middle").attr("fill", "#64748B").style("font-size", "11px").style("font-weight", "700").text("Total Volume (Fines Logged)");
     }
 
     update(data) {
@@ -390,11 +488,10 @@ class JurisdictionBarChart {
 class DemographicBarChart {
     constructor(containerId) {
         this.containerId = containerId;
-        // Adjusted left margin to 110px to prevent parameter text overflow errors
-        this.margin = { top: 15, right: 80, bottom: 45, left: 110 };
+        this.margin = { top: 15, right: 80, bottom: 75, left: 110 };
         const node = d3.select(this.containerId).node();
         this.width = (node && node.getBoundingClientRect().width > 0 ? node.getBoundingClientRect().width : 450) - this.margin.left - this.margin.right;
-        this.height = 240 - this.margin.top - this.margin.bottom;
+        this.height = 285 - this.margin.top - this.margin.bottom;
 
         this.svg = d3.select(this.containerId).html("").append("svg")
             .attr("width", this.width + this.margin.left + this.margin.right)
@@ -408,6 +505,27 @@ class DemographicBarChart {
         this.tooltip = d3.select("#d3-tooltip");
 
         this.svg.append("text").attr("x", this.width / 2).attr("y", this.height + 35).attr("text-anchor", "middle").attr("fill", "#64748B").style("font-size", "11px").style("font-weight", "700").text("Enforcement Volume (Fines Issued)");
+        
+        const footnoteText = this.svg.append("text")
+            .attr("class", "donut-footnote")
+            .attr("x", this.width / 2 - 15)
+            .attr("y", this.height + 54) 
+            .attr("text-anchor", "middle")
+            .attr("fill", "#64748B")
+            .style("font-size", "9.5px")
+            .style("font-style", "italic");
+
+        const lines = [
+            "* Note: Detailed age profiling matrices were not tracked nationally",
+            "prior to the 2023 collection era; data represents 2023-2024 parameters only."
+        ];
+
+        lines.forEach((lineText, index) => {
+            footnoteText.append("tspan")
+                .attr("x", this.width / 2 - 15)
+                .attr("dy", index === 0 ? "0" : "13px")
+                .text(lineText);
+        });
     }
 
     update(data) {
@@ -415,7 +533,6 @@ class DemographicBarChart {
         const profileMap = d3.rollup(data, v => d3.sum(v, d => +d.FINES || 0), d => d.AGE_GROUP);
         let profiles = structuralAgeBands.map(bracket => ({ bracket, val: profileMap.get(bracket) || 0 }));
 
-        // 🚀 Requirement 2: Sorted high to low (Descending order)
         profiles.sort((a, b) => d3.descending(a.val, b.val));
 
         this.svg.selectAll(".bar-direct-label").remove();
@@ -446,7 +563,7 @@ class DemographicBarChart {
 class LocationGroupedChart {
     constructor(containerId) {
         this.containerId = containerId;
-        this.margin = { top: 20, right: 75, bottom: 45, left: 165 };
+        this.margin = { top: 20, right: 75, bottom: 80, left: 165 };
         const node = d3.select(this.containerId).node();
         this.width = (node && node.getBoundingClientRect().width > 0 ? node.getBoundingClientRect().width : 950) - this.margin.left - this.margin.right;
         this.height = 240 - this.margin.top - this.margin.bottom;
@@ -463,6 +580,27 @@ class LocationGroupedChart {
         this.tooltip = d3.select("#d3-tooltip");
 
         this.svg.append("text").attr("x", this.width / 2).attr("y", this.height + 35).attr("text-anchor", "middle").attr("fill", "#64748B").style("font-size", "11px").style("font-weight", "700").text("Spatial Breakdown Density Load (Fines Issued)");
+
+        const footnoteText = this.svg.append("text")
+            .attr("class", "donut-footnote")
+            .attr("x", this.width / 2)
+            .attr("y", this.height + 56) 
+            .attr("text-anchor", "middle")
+            .attr("fill", "#64748B")
+            .style("font-size", "9.5px")
+            .style("font-style", "italic");
+
+        const lines = [
+            "* Note: ASGS spatial remoteness area classifications are exclusive parameters introduced in the 2023 administrative restructuring.",
+            "Historical reporting indices mapped between 2008 and 2022 do not contain fine-grained localized regional breakdowns."
+        ];
+
+        lines.forEach((lineText, index) => {
+            footnoteText.append("tspan")
+                .attr("x", this.width / 2)
+                .attr("dy", index === 0 ? "0" : "13px")
+                .text(lineText);
+        });
     }
 
     update(data, currentJurisdiction) {
@@ -472,7 +610,6 @@ class LocationGroupedChart {
 
         this.svg.selectAll(".location-direct-label, .placeholder-msg-node").remove();
 
-        // 🚀 CONTEXTUAL PLACEHOLDER ENGINE: Handles unspecified datasets inside the viewbox cleanly
         if (rollup.length === 0) { 
             this.svg.selectAll(".chart-bar").remove(); 
             this.xAxisG.style("opacity", 0); 
