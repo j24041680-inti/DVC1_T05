@@ -4,6 +4,9 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>National Road Safety Enforcement & Compliance Hub</title>
+    
+    <link rel="icon" type="image/png" href="assets/car-icon.png">
+    
     <link rel="stylesheet" href="css/style.css">
     <script src="https://d3js.org/d3.v7.min.js"></script>
 </head>
@@ -30,22 +33,121 @@
         <main class="app-content-area">
             
             <div id="page-home" class="page-view active">
-                <div class="welcome-hero">
-                    <h1>National Road Safety Compliance Registry</h1>
-                    <p>Longitudinal transport safety analytics and fine-grained data visualizations mapped dynamically from official BITRE enforcement matrices.</p>
+                <div class="welcome-hero" style="text-align: center; padding: 60px 40px; margin-bottom: 20px;">
+                    <div style="display: inline-block; background: rgba(255, 255, 255, 0.15); padding: 6px 16px; border-radius: 20px; font-size: 0.85rem; font-weight: 600; margin-bottom: 20px; letter-spacing: 1px; text-transform: uppercase; border: 1px solid rgba(255,255,255,0.3);">
+                        v2.0 Analytical Engine
+                    </div>
+                    <h1 style="font-size: 2.8rem; margin-bottom: 15px;">National Road Safety Registry</h1>
+                    <p style="font-size: 1.15rem; opacity: 0.95; max-width: 700px; margin: 0 auto; line-height: 1.6;">
+                        Longitudinal transport safety analytics and fine-grained demographic visualizations mapped dynamically from official BITRE enforcement matrices.
+                    </p>
                 </div>
-                <div class="content-card" style="text-align: center; padding: 60px 20px;">
-                    <h2 style="font-size: 1.8rem; color: #1A202C;">Initiate Data Exploration</h2>
-                    <p style="color: #4A5568; font-size: 1.1rem; max-width: 600px; margin: 0 auto; margin-top: 10px;">Select an infraction matrix from the left sidebar panel to compute systemic road compliance parameters.</p>
+
+                <div class="home-kpi-banner">
+                    <div class="home-kpi-item">
+                        <span class="home-kpi-label">Total National Infringements Logged</span>
+                        <span id="home-grand-total" class="home-kpi-value">Loading Data...</span>
+                    </div>
+                    <div class="home-kpi-item">
+                        <span class="home-kpi-label">Historical Timespan Captured</span>
+                        <span class="home-kpi-value" style="color: #0F172A;">2008 – 2024</span>
+                    </div>
+                </div>
+
+                <div class="home-module-grid">
+                    <div class="module-card">
+                        <div class="module-icon">📱</div>
+                        <h3>Mobile Phone Distractions</h3>
+                        <p>Analyze the longitudinal shift from physical police intercepts to automated camera detection networks.</p>
+                    </div>
+                    <div class="module-card">
+                        <div class="module-icon">⚡</div>
+                        <h3>Speeding Infringements</h3>
+                        <p>Track high-volume macro trends and spatial remoteness area categorizations across state jurisdictions.</p>
+                    </div>
+                    <div class="module-card">
+                        <div class="module-icon">🛡️</div>
+                        <h3>Seatbelt Usage</h3>
+                        <p>Evaluate staggered regional compliance timelines and detailed age-bracket offender profiling.</p>
+                    </div>
+                    <div class="module-card">
+                        <div class="module-icon">🪪</div>
+                        <h3>Driver Licensing</h3>
+                        <p>Review legal severity matrices, including historical formal court charges and physical arrests.</p>
+                    </div>
                 </div>
             </div>
 
-            <div id="page-about" class="page-view">
-                <div class="content-card">
-                    <h2>About the Platform Architecture</h2>
-                    <p>This layout operates on polymorphic data pipelines. As temporal parameters shift between macro historical aggregates and newer granular tiers, the dashboard grid restructures its workspace dynamically to maintain analytical clarity.</p>
+            <!-- ℹ️ ABOUT PAGE -->
+        <div id="page-about" class="page-view">
+            <!-- 🚀 Premium Gradient Hero Banner -->
+            <div class="welcome-hero" style="background: linear-gradient(135deg, #0F172A 0%, #1E293B 100%); padding: 50px 40px; border-radius: 16px; margin-bottom: 40px; box-shadow: 0 20px 25px -5px rgba(15, 23, 42, 0.1), 0 8px 10px -6px rgba(15, 23, 42, 0.1);">
+                <div style="display: inline-flex; align-items: center; gap: 8px; background: rgba(255, 255, 255, 0.1); padding: 6px 16px; border-radius: 20px; font-size: 0.85rem; font-weight: 600; color: #94A3B8; margin-bottom: 20px; letter-spacing: 1px; text-transform: uppercase; border: 1px solid rgba(255,255,255,0.05);">
+                    <span style="height: 8px; width: 8px; background-color: #10B981; border-radius: 50%; display: inline-block; box-shadow: 0 0 8px rgba(16, 185, 129, 0.8);"></span>
+                    System Architecture
+                </div>
+                <h1 style="font-size: 2.6rem; color: #F8FAFC; margin-bottom: 15px; letter-spacing: -0.5px;">Understanding National Road Safety</h1>
+                <p style="font-size: 1.15rem; color: #94A3B8; max-width: 800px; line-height: 1.6; font-weight: 400; margin: 0;">
+                    This platform transforms millions of raw administrative records into actionable insights, helping communities track how road safety is enforced across Australia.
+                </p>
+            </div>
+
+            <!-- 🚀 Redesigned Asymmetric Grid Layout -->
+            <div class="about-grid" style="display: grid; grid-template-columns: repeat(2, 1fr); gap: 24px;">
+                
+                <!-- Card 1 -->
+                <div class="content-card about-card" style="background: #FFFFFF; border: 1px solid #E2E8F0; border-radius: 16px; padding: 40px; box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05); transition: all 0.3s ease;">
+                    <div class="about-header" style="border-bottom: none; padding-bottom: 0; margin-bottom: 20px;">
+                        <div style="height: 48px; width: 48px; background: #EFF6FF; border-radius: 12px; display: flex; align-items: center; justify-content: center; margin-bottom: 20px;">
+                            <span class="about-icon" style="font-size: 1.5rem; line-height: 1;">🎯</span>
+                        </div>
+                        <h2 style="color: #0F172A; font-size: 1.25rem !important; font-weight: 700; letter-spacing: -0.3px;">The Road to Vision Zero</h2>
+                    </div>
+                    <p style="color: #64748B; font-size: 0.95rem; line-height: 1.6;">
+                        Every data point represents a critical intervention. By aggregating millions of enforcement records from the Bureau of Infrastructure and Transport Research Economics (BITRE), this hub empowers policymakers, researchers, and the public to identify high-risk behaviors and measure the effectiveness of national safety campaigns over time.
+                    </p>
+                </div>
+
+                <!-- Card 2 -->
+                <div class="content-card about-card" style="background: #FFFFFF; border: 1px solid #E2E8F0; border-radius: 16px; padding: 40px; box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05); transition: all 0.3s ease;">
+                    <div class="about-header" style="border-bottom: none; padding-bottom: 0; margin-bottom: 20px;">
+                        <div style="height: 48px; width: 48px; background: #F5F3FF; border-radius: 12px; display: flex; align-items: center; justify-content: center; margin-bottom: 20px;">
+                            <span class="about-icon" style="font-size: 1.5rem; line-height: 1;">📸</span>
+                        </div>
+                        <h2 style="color: #0F172A; font-size: 1.25rem !important; font-weight: 700; letter-spacing: -0.3px;">The Infrastructure Shift</h2>
+                    </div>
+                    <p style="color: #64748B; font-size: 0.95rem; line-height: 1.6;">
+                        Road safety enforcement is undergoing a massive technological transition. This dashboard tracks the historical shift away from traditional, resource-heavy physical police intercepts toward modern, highly efficient automated camera networks, revealing how different states adopt technology to monitor speeding and mobile phone distractions.
+                    </p>
+                </div>
+
+                <!-- Card 3 -->
+                <div class="content-card about-card" style="background: #FFFFFF; border: 1px solid #E2E8F0; border-radius: 16px; padding: 40px; box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05); transition: all 0.3s ease;">
+                    <div class="about-header" style="border-bottom: none; padding-bottom: 0; margin-bottom: 20px;">
+                        <div style="height: 48px; width: 48px; background: #EEF2FF; border-radius: 12px; display: flex; align-items: center; justify-content: center; margin-bottom: 20px;">
+                            <span class="about-icon" style="font-size: 1.5rem; line-height: 1;">👥</span>
+                        </div>
+                        <h2 style="color: #0F172A; font-size: 1.25rem !important; font-weight: 700; letter-spacing: -0.3px;">Demographic Realities</h2>
+                    </div>
+                    <p style="color: #64748B; font-size: 0.95rem; line-height: 1.6;">
+                        Effective road safety requires targeted education, not just blanket penalties. By visualizing compliance failures across distinct age brackets, the platform highlights exactly which demographic profiles are engaging in risky behaviors—such as unlicensed driving or seatbelt violations—allowing for smarter community outreach.
+                    </p>
+                </div>
+
+                <!-- Card 4 -->
+                <div class="content-card about-card" style="background: #FFFFFF; border: 1px solid #E2E8F0; border-radius: 16px; padding: 40px; box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05); transition: all 0.3s ease;">
+                    <div class="about-header" style="border-bottom: none; padding-bottom: 0; margin-bottom: 20px;">
+                        <div style="height: 48px; width: 48px; background: #F0FDF4; border-radius: 12px; display: flex; align-items: center; justify-content: center; margin-bottom: 20px;">
+                            <span class="about-icon" style="font-size: 1.5rem; line-height: 1;">🗺️</span>
+                        </div>
+                        <h2 style="color: #0F172A; font-size: 1.25rem !important; font-weight: 700; letter-spacing: -0.3px;">Geographic & Legal Impact</h2>
+                    </div>
+                    <p style="color: #64748B; font-size: 0.95rem; line-height: 1.6;">
+                        Australia's vast landscape presents unique enforcement challenges. The platform maps compliance density across the ASGS spatial remoteness index—from major cities to very remote territories. Furthermore, it tracks the severe end of the judicial spectrum, monitoring cases that escalate from simple fines into formal court charges and physical arrests.
+                    </p>
                 </div>
             </div>
+        </div>
 
             <div id="page-dashboard" class="page-view">
                 
@@ -88,8 +190,18 @@
                         </select>
                     </div>
                     <div class="kpi-micro-badge">
-                        <span class="kpi-label">Aggregated Valuation:</span>
+                        <span class="kpi-label">Total Fines:</span>
                         <span id="kpi-total-volume" class="kpi-value">0 Fines Issued</span>
+                    </div>
+                </div>
+
+                <div class="dashboard-pager-ribbon" style="display: flex; align-items: center; justify-content: space-between; width: 100%; box-sizing: border-box;">
+                    <div style="display: flex; gap: 12px; flex-grow: 1;">
+                        <button class="pager-btn active" data-page="1">📊 Page 1: Executive Overview Trends</button>
+                        <button class="pager-btn" id="pager-btn-page2" data-page="2">🎯 Page 2: Demographics & Deep-Dive Profiles</button>
+                    </div>
+                    <div id="page2-lock-notice" style="font-size: 0.8rem; font-weight: 500; color: #EF4444; margin-left: 15px; display: none; background: #FEE2E2; padding: 6px 12px; border-radius: 6px; border: 1px solid #FCA5A5;">
+                        🔒 Page 2 locked: Select a year from 2023 or 2024 to unlock! 
                     </div>
                 </div>
 
@@ -97,58 +209,72 @@
                     <h3>🚫 Metric Not Tracked</h3>
                     <p>Unlicensed Driving metrics were not incorporated into the national BITRE matrix until 2023. Please select a year from 2023 onwards.</p>
                 </div>
-
-                <div class="workspace-charts-row">
-                    <section class="chart-container full-width-box">
-                        <h2 id="dynamic-trend-title">Longitudinal Evaluation Series</h2>
-                        <div id="timeline-chart"></div>
-                    </section>
+                
+                <div id="seatbelt-warning-banner" class="alert-banner error-banner" style="display: none;">
+                    <h3>🚫 Metric Not Tracked</h3>
+                    <p>Seatbelt Violation metrics were not incorporated into the national BITRE matrix until 2017. Please select a year from 2017 onwards.</p>
                 </div>
 
-                <div class="workspace-charts-row">
-                    <div id="donut-grid-item" class="half-width-box">
+                <div id="dashboard-subpage-1" class="dashboard-subpage active-subpage">
+                    <div id="row-timeline" class="workspace-charts-row">
                         <section class="chart-container full-width-box">
-                            <h2>Infrastructure Split (Camera vs. Police)</h2>
-                            <div id="detection-donut-chart"></div>
+                            <h2 id="dynamic-trend-title">Longitudinal Evaluation Series</h2>
+                            <div id="timeline-chart"></div>
                         </section>
                     </div>
-                    <div id="jurisdiction-grid-item" class="half-width-box">
-                        <section class="chart-container full-width-box">
-                            <h2>Jurisdiction Cross-Comparison Breakdown</h2>
-                            <div id="jurisdiction-bar-chart"></div>
-                        </section>
+
+                    <div id="row-donut-jurisdiction" class="workspace-charts-row">
+                        <div id="donut-grid-item" class="half-width-box">
+                            <section class="chart-container full-width-box">
+                                <h2>Infrastructure Split (Camera vs. Police)</h2>
+                                <div id="detection-donut-chart"></div>
+                            </section>
+                        </div>
+                        <div id="jurisdiction-grid-item" class="half-width-box">
+                            <section class="chart-container full-width-box">
+                                <h2>Jurisdiction Cross-Comparison Breakdown</h2>
+                                <div id="jurisdiction-bar-chart"></div>
+                            </section>
+                        </div>
                     </div>
                 </div>
 
-                <div id="advanced-metrics-grid">
-                    <div class="workspace-charts-row">
-                        <section class="chart-container half-width-box">
-                            <h2>Top Demographic Offender Profiles</h2>
-                            <div id="demographic-bar-chart"></div>
-                        </section>
-                        
-                        <section class="chart-container half-width-box">
-                            <h2>Legal Severity Matrix (Charges & Arrests Outcomes)</h2>
-                            <div id="severity-table-container" class="table-scroll-frame">
-                                <table class="saas-metric-table">
-                                    <thead>
-                                        <tr>
-                                            <th>Enforcement Outcome Category</th>
-                                            <th>Cases Documented</th>
-                                        </tr>
-                                    </thead>
-                                    <tbody id="severity-table-body">
+                <div id="dashboard-subpage-2" class="dashboard-subpage">
+                    <div id="advanced-metrics-grid">
+                        <div class="workspace-charts-row">
+                            <section class="chart-container half-width-box">
+                                <h2>Top Demographic Offender Profiles</h2>
+                                <div id="demographic-lollipop-chart"></div>
+                            </section>
+                            
+                            <section class="chart-container half-width-box" style="display: flex; flex-direction: column;">
+                                <h2>Legal Severity Matrix (Charges & Arrests Outcomes)</h2>
+        
+                                <div id="severity-table-container" class="table-scroll-frame" style="flex-grow: 1; display: flex; flex-direction: column; justify-content: center;">
+                                    <table class="saas-metric-table">
+                                        <thead>
+                                            <tr>
+                                                <th>Enforcement Outcome Category</th>
+                                                <th>Cases Documented</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody id="severity-table-body">
                                         </tbody>
-                                </table>
-                            </div>
-                        </section>
-                    </div>
+                                    </table>
+                                    <div style="font-size: 9.5px; font-style: italic; color: #64748B; text-align: center; margin-top: 20px; line-height: 1.4;">
+                                        * Note: Judicial court processing outcomes (physical custody arrests and formal charges)<br>
+                                        were not incorporated by BITRE until 2023. Prior historical iterations only track fine volumes.
+                                    </div>
+                                </div>
+                            </section>
+                        </div>
 
-                    <div class="workspace-charts-row">
-                        <section class="chart-container full-width-box">
-                            <h2>Spatial Remoteness Area Categorization</h2>
-                            <div id="spatial-grouped-chart"></div>
-                        </section>
+                        <div class="workspace-charts-row">
+                            <section class="chart-container full-width-box">
+                                <h2>Spatial Remoteness Area Categorization</h2>
+                                <div id="spatial-grouped-chart"></div>
+                            </section>
+                        </div>
                     </div>
                 </div>
 
