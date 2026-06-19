@@ -87,13 +87,17 @@ function animateHomeGrandTotal() {
       });
 }
 
+// core data filtering pipeline
+// filters the dataset based on active dropdown values and pushes updates to the charts.
 function dispatchDataUpdate() {
+    // filter data for the timeline chart without applying specific year constraints
     const timelineData = masterDataset.filter(d => {
         const matchCategory = d.METRIC === appState.currentCategory;
         const matchState    = appState.selectedJurisdiction === "All" || d.JURISDICTION === appState.selectedJurisdiction;
         return matchCategory && matchState;
     });
 
+    // filter data slice for the broken-down detail views
     const filteredSlice = masterDataset.filter(d => {
         const matchCategory = d.METRIC === appState.currentCategory;
         const matchState    = appState.selectedJurisdiction === "All" || d.JURISDICTION === appState.selectedJurisdiction;
@@ -101,6 +105,7 @@ function dispatchDataUpdate() {
         return matchCategory && matchState && matchYear;
     });
 
+    // map internal keys to readable text titles
     const metricLabels = { 
         mobile_phone_use: "Mobile Phone Distractions", 
         speed_fines: "Speeding Infringements", 
@@ -114,11 +119,11 @@ function dispatchDataUpdate() {
         d3.select("#dynamic-trend-title").text(`${metricLabels[appState.currentCategory]} - Camera vs. Police Trends`);
     }
 
-    // Staggered seatbelt & licensing data accuracy checks
     const isAll = appState.selectedYear === "All";
     const yearInt = parseInt(appState.selectedYear);
     const state = appState.selectedJurisdiction;
 
+    // safety checks to verify if data exists for the selected timeframe
     const isUnlicensedInvalid = !isAll && appState.currentCategory === "unlicensed_driving" && yearInt < 2023;
 
     let seatbeltStartYear = 2017; 
@@ -127,42 +132,39 @@ function dispatchDataUpdate() {
 
     const isSeatbeltInvalid = !isAll && appState.currentCategory === "non_wearing_seatbelts" && yearInt < seatbeltStartYear;
 
+    // check if the user selected queensland for the year 2023
+    const isQld2023Invalid = (state === "QLD" && yearInt === 2023);
+
+    // toggle banners based on the data checks
     d3.select("#unlicensed-warning-banner").style("display", isUnlicensedInvalid ? "block" : "none");
     d3.select("#seatbelt-warning-banner").style("display", isSeatbeltInvalid ? "block" : "none");
+    d3.select("#qld-2023-warning-banner").style("display", isQld2023Invalid ? "block" : "none");
     
     if (isSeatbeltInvalid) {
         d3.select("#seatbelt-warning-banner p").text(`Seatbelt Violation metrics for ${state === 'All' ? 'Australia' : state} were not incorporated into the national matrix until ${seatbeltStartYear}. Please select a year from ${seatbeltStartYear} onwards.`);
     }
 
     const hideAllCharts = isUnlicensedInvalid || isSeatbeltInvalid;
+    const isHistoricalEra = !isAll && yearInt < 2023; 
 
-    // Automatic page 2 lock gatekeeper
-    const isHistoricalEra = !isAll && yearInt < 2023; // True if user picked 2008-2022
-
-    if (hideAllCharts || isHistoricalEra) {
-        // Force the user back to page 1 state if page 2 becomes invalid
+    // dashboard page 2 lock logic
+    // forces user back to page 1 and disables the tab button if looking at older historical data or queensland 2023
+    if (hideAllCharts || isHistoricalEra || isQld2023Invalid) {
         if (appState.activeDashboardPage === 2) {
             appState.activeDashboardPage = 1;
             d3.selectAll(".dashboard-pager-ribbon .pager-btn").classed("active", false);
             d3.selectAll(".dashboard-pager-ribbon .pager-btn[data-page='1']").classed("active", true);
         }
-
-        // Gray out the button and show the red notice bar
-        d3.select("#pager-btn-page2")
-            .style("opacity", "0.4")
-            .style("cursor", "not-allowed")
-            .style("pointer-events", "none");
-        d3.select("#page2-lock-notice").style("display", "block");
+        d3.select("#pager-btn-page2").style("opacity", "0.4").style("cursor", "not-allowed").style("pointer-events", "none");
+        
+        // hide the small right-side notice if it's just a queensland data gap, otherwise show it for old years
+        d3.select("#page2-lock-notice").style("display", isHistoricalEra && !isQld2023Invalid ? "block" : "none");
     } else {
-        // Unlock the button completely if looking at 2023, 2024, or "All History"
-        d3.select("#pager-btn-page2")
-            .style("opacity", "1")
-            .style("cursor", "pointer")
-            .style("pointer-events", "auto");
+        d3.select("#pager-btn-page2").style("opacity", "1").style("cursor", "pointer").style("pointer-events", "auto");
         d3.select("#page2-lock-notice").style("display", "none");
     }
 
-    // Toggle main visibility containers based on computed rules
+    // handle content visibility and distribute data to active charts
     if (hideAllCharts) {
         d3.select("#dashboard-subpage-1").style("display", "none");
         d3.select("#dashboard-subpage-2").style("display", "none");
@@ -191,6 +193,7 @@ function dispatchDataUpdate() {
         }
     }
 
+    // rolling text transition loop for the subheader total volume display
     const totalVolume = d3.sum(filteredSlice, d => +d.FINES || 0);
     d3.select("#kpi-total-volume")
       .transition().duration(1000)
